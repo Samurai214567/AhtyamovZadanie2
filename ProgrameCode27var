@@ -1,0 +1,148 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Базовый абстрактный класс
+class Membership {
+protected:
+    string fullName;
+    string type;
+    double price;
+    int visitsLeft;
+
+public:
+    // Конструктор
+    Membership(string name, string t, double p, int visits) {
+        fullName = name;
+        type = t;
+        price = p;
+        visitsLeft = visits;
+    }
+
+    // Виртуальный деструктор
+    virtual ~Membership() {
+        cout << "Удален абонемент: " << fullName << endl;
+    }
+
+    // Обычный метод
+    void useVisit() {
+        if (visitsLeft > 0) {
+            visitsLeft--;
+        }
+    }
+
+    string getName() {
+        return fullName;
+    }
+
+    // Чисто виртуальные методы
+    virtual double calcMonthlyCost() = 0;
+    virtual string getScheduleInfo() = 0;
+
+    // Виртуальный метод вывода информации
+    virtual void printInfo() {
+        cout << "ФИО: " << fullName << endl;
+        cout << "Тип: " << type << endl;
+        cout << "Цена: " << price << endl;
+        cout << "Осталось посещений: " << visitsLeft << endl;
+    }
+};
+
+// Производный класс: групповой абонемент
+class GroupMembership : public Membership {
+private:
+    string className;
+    string trainer;
+
+public:
+    GroupMembership(string name, string t, double p, int visits,
+        string cName, string tr)
+        : Membership(name, t, p, visits) {
+        className = cName;
+        trainer = tr;
+    }
+
+    double calcMonthlyCost() override {
+        return price + 1000; // фиксированная доплата за групповые занятия
+    }
+
+    string getScheduleInfo() override {
+        return "Групповое занятие: " + className + ", тренер: " + trainer;
+    }
+
+    void printInfo() override {
+        Membership::printInfo();
+        cout << "Название занятия: " << className << endl;
+        cout << "Тренер: " << trainer << endl;
+        cout << "Стоимость за месяц: " << calcMonthlyCost() << endl;
+        cout << "---------------------" << endl;
+    }
+};
+
+// Производный класс: персональный абонемент
+class PersonalMembership : public Membership {
+private:
+    string personalTrainer;
+    int trainingsPerWeek;
+
+public:
+    PersonalMembership(string name, string t, double p, int visits,
+        string trainer, int trainings)
+        : Membership(name, t, p, visits) {
+        personalTrainer = trainer;
+        trainingsPerWeek = trainings;
+    }
+
+    double calcMonthlyCost() override {
+        return price + trainingsPerWeek * 500;
+    }
+
+    string getScheduleInfo() override {
+        return "Персональный тренер: " + personalTrainer +
+            ", тренировок в неделю: " + to_string(trainingsPerWeek);
+    }
+
+    void printInfo() override {
+        Membership::printInfo();
+        cout << "Персональный тренер: " << personalTrainer << endl;
+        cout << "Тренировок в неделю: " << trainingsPerWeek << endl;
+        cout << "Стоимость за месяц: " << calcMonthlyCost() << endl;
+        cout << "---------------------" << endl;
+    }
+};
+
+int main() {
+    setlocale(0, "");
+
+    const int N = 4;
+    Membership* arr[N];
+
+    // Массив указателей на базовый класс
+    arr[0] = new GroupMembership("Иванов Иван", "Месячный", 2000, 10, "Йога", "Петров");
+    arr[1] = new PersonalMembership("Сидоров Алексей", "Премиум", 3000, 12, "Смирнов", 3);
+    arr[2] = new GroupMembership("Кузнецова Мария", "Стандарт", 2200, 8, "Аэробика", "Иванова");
+    arr[3] = new PersonalMembership("Павлов Дмитрий", "VIP", 3500, 15, "Орлов", 2);
+
+    cout << "=== Информация об абонементах ===" << endl;
+    for (int i = 0; i < N; i++) {
+        arr[i]->printInfo();
+    }
+
+    cout << "\n=== Расписание ===" << endl;
+    for (int i = 0; i < N; i++) {
+        cout << arr[i]->getName() << ": " << arr[i]->getScheduleInfo() << endl;
+    }
+
+    cout << "\n=== Использование посещения ===" << endl;
+    for (int i = 0; i < N; i++) {
+        arr[i]->useVisit();
+        cout << arr[i]->getName() << " использовал одно посещение" << endl;
+    }
+
+    cout << "\n=== Удаление объектов ===" << endl;
+    for (int i = 0; i < N; i++) {
+        delete arr[i];
+    }
+
+    return 0;
+}
